@@ -14,8 +14,8 @@ function superDeep(obj) {
     for (const key in obj) {
       clone[`${key}`] = superDeep(obj[`${key}`]);
     }
-    return clone;
   }
+  return clone;
 }
 
 // функция должна работать исправно. 
