@@ -1,10 +1,8 @@
 
 function superDeep(obj) {
   const clone = {};
-  if (
-    (Array.isArray(obj) == false && typeof obj !== "object") ||
-    obj instanceof Date
-  ) {
+  // для new Date() значения в принципе нет необходимости делать проверку, тк в под.большинстве приходит стандарт в примитиве
+  if (Array.isArray(obj) == false && typeof obj !== "object") {
     return obj;
   }
 
