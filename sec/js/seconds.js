@@ -16,7 +16,9 @@ function start() {
       ":" +
       (time.getSeconds() < 10 ? "0" + time.getSeconds() : time.getSeconds()) +
       ":" +
-      String(time.getMilliseconds()).slice(0, 2)
+      (String(time.getMilliseconds()).slice(0, 2) < 10
+        ? "0" + String(time.getMilliseconds()).slice(0, 2)
+        : String(time.getMilliseconds()).slice(0, 2))
     }`;
   }, 10);
 }
