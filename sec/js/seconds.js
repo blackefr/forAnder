@@ -26,7 +26,7 @@ function reset() {
 function toList() {
   document.querySelector(".ulRoot").innerHTML +=  `<li>${masterElem.textContent} </li>`;
 }
-document.querySelector(".st").addEventListener("click", () => start());
-document.querySelector(".sp").addEventListener("click", () => pause());
-document.querySelector(".res").addEventListener("click", () => reset());
-document.querySelector(".cr").addEventListener("click", () => toList());
+document.querySelector(".startbtn").addEventListener("click", () => start());
+document.querySelector(".pausebtn").addEventListener("click", () => pause());
+document.querySelector(".resetbtn").addEventListener("click", () => reset());
+document.querySelector(".circlebtn").addEventListener("click", () => toList());
