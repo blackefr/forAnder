@@ -2,9 +2,9 @@ import {circleBtn, masterElem, pauseBtn, resetBtn, startBtn, rootUl} from "./sto
 let mili = 0;
 let timer, forLaps;
 function converter(data) {
-  return String(data).slice(0, 3) < 10
-    ? "0" + String(data).slice(0, 3)
-    : String(data).slice(0, 3);
+  return String(data).slice(0, 2) < 10
+    ? "0" + String(data).slice(0, 2)
+    : String(data).slice(0, 2);
 }
 function start() {
   clearInterval(timer);
@@ -17,11 +17,7 @@ function start() {
       time.getMilliseconds() < 100
         ? "0" + time.getMilliseconds()
         : time.getMilliseconds();
-    masterElem.textContent = `${converter(time.getUTCHours())}:${converter(
-      time.getMinutes()
-    )}:${converter(time.getSeconds())}:${converter(
-      time.getMilliseconds()
-    ).slice(0, 2)}`;
+    masterElem.textContent = `${converter(time.getUTCHours())}:${converter(time.getMinutes())}:${converter(time.getSeconds())}:${converter(time.getMilliseconds())}`
   }, 10);
 }
 function pause() {
