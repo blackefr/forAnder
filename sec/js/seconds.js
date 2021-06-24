@@ -2,9 +2,7 @@ import {circleBtn, masterElem, pauseBtn, resetBtn, startBtn, rootUl} from "./sto
 let mili = 0;
 let timer, forLaps;
 function converter(data) {
-  return String(data).slice(0, 3) < 10
-    ? "0" + String(data).slice(0, 3)
-    : String(data).slice(0, 3);
+  return data < 10? ("0" + data).slice(0, 2) : data;
 }
 function start() {
   clearInterval(timer);
@@ -13,16 +11,11 @@ function start() {
   timer = setInterval(() => {
     mili += 10;
     const time = new Date(mili);
-    forLaps =
-      time.getMilliseconds() < 100
-        ? "0" + time.getMilliseconds()
-        : time.getMilliseconds();
-    masterElem.textContent = `${converter(time.getUTCHours())}:${converter(
-      time.getMinutes()
-    )}:${converter(time.getSeconds())}:${converter(
-      time.getMilliseconds()
-    ).slice(0, 2)}`;
-  }, 10);
+    forLaps = time.getMilliseconds() === 0? "00" + time.getMilliseconds():  time.getMilliseconds() <100?  "0" + time.getMilliseconds() : time.getMilliseconds();
+    masterElem.textContent = `
+    ${converter(time.getUTCHours())}:${converter(time.getMinutes())}:${converter(time.getSeconds())}:${('0'+time.getMilliseconds()).slice(-3,-1)<10?('00'+time.getMilliseconds()).slice(-3,-1) : String(time.getMilliseconds()).slice(-3,-1)}
+    `}
+    , 10);
 }
 function pause() {
   clearInterval(timer);
@@ -36,7 +29,7 @@ function reset() {
   rootUl.innerHTML = "";
 }
 function toList() {
-  rootUl.innerHTML = `<li> ${rootUl.children.length + 1}) ${masterElem.textContent.slice(0, 9)}${forLaps} </li>` + rootUl.innerHTML;
+  rootUl.innerHTML = `<li> ${rootUl.children.length + 1}) ${masterElem.outerText.slice(0,9)}${forLaps} </li>` + rootUl.innerHTML;
 }
 document.querySelector(".startbtn").addEventListener("click", () => start());
 document.querySelector(".pausebtn").addEventListener("click", () => pause());
