@@ -14,7 +14,6 @@ class Stopwatcher {
   converter(data) {
     return data < 10 ? ("0" + data).slice(0, 2) : data;
   }
-
   tick = null;
   // для обработки this.data
   dataHelper() {
@@ -36,15 +35,16 @@ class Stopwatcher {
   // описание основной структуры
   structure() {
     const divElement = document.createElement("div");
-    divElement.classList.add(this.id, "stopwatchers");
     const hElement = document.createElement("h1");
-    hElement.textContent = "Секундомер";
     const watcher = document.createElement("h2");
     const divElement2 = document.createElement("div");
-    watcher.textContent = this.dataHelper();
     const mainList = document.createElement("div");
-    mainList.className = "list";
     const listUl = document.createElement("ul");
+    divElement.classList.add(this.id, "stopwatchers");
+    hElement.textContent = "Секундомер";
+    watcher.textContent = this.dataHelper();
+    mainList.className = "list";
+
     // кнопка для удаления секундомера и удаление всех данных о нем
     const deleterButton = document.createElement("button");
     deleterButton.textContent = "удалить секундомер";
@@ -54,6 +54,7 @@ class Stopwatcher {
       localStorage.setItem("dataStore", JSON.stringify(storage));
       divElement.remove();
     });
+
     // кнопка старта
     const startButton = document.createElement("button");
     startButton.className = "startButton";
@@ -74,6 +75,7 @@ class Stopwatcher {
       this.paused = !this.paused;
       this.recordedResult();
     });
+
     // кнопка паузы
     const pauseButton = document.createElement("button");
     pauseButton.className = "pauseButton";
@@ -87,6 +89,7 @@ class Stopwatcher {
       this.paused = !this.paused;
       this.recordedResult();
     });
+
     // кнопка сброса
     const resetButton = document.createElement("button");
     resetButton.className = "resetButton";
@@ -100,6 +103,7 @@ class Stopwatcher {
       watcher.textContent = this.dataHelper();
       this.recordedResult();
     });
+
     // кнопка круга
     const lapButton = document.createElement("button");
     lapButton.className = "lapButton";
@@ -115,7 +119,7 @@ class Stopwatcher {
         this.li = this.li.filter((i) => i != listLi.textContent);
         this.recordedResult();
       });
-      this.li.push(watcher.textContent);
+      this.li.push(this.dataHelper());
       listLi.textContent = `${this.li[this.li.length - 1]}`;
       listUl.append(listLi);
       listLi.append(liDel);
@@ -126,6 +130,7 @@ class Stopwatcher {
     divElement.append(deleterButton, hElement, watcher, divElement2, mainList);
     divElement2.append(startButton, pauseButton, resetButton, lapButton);
     mainList.append(listUl);
+
     //  при обновлении страницы выстраивается структура списка
     this.li.forEach((i) => {
       const listLi = document.createElement("li");
@@ -141,6 +146,7 @@ class Stopwatcher {
       listUl.append(listLi);
       listLi.append(liDel);
     });
+
     // для того, чтобы секундомер не прекращал работу после обновления страницы
     if (!this.paused) {
       this.tick = setInterval(() => {
@@ -153,12 +159,15 @@ class Stopwatcher {
     }
   }
 }
+
 //  после обновления страницы отрисовываем создаем и отрисовываем все, что было сохранено
 Object.values(storage).forEach((i) => new Stopwatcher(i));
+
 //  для создания нового секундомера
 const creator = document.createElement("div");
 const creatorButton = document.createElement("button");
 creatorButton.textContent = "создать секундомер";
+
 // используем дефолтное состояние секундомера, но id передаем именно здесь, иначе js ругается
 creatorButton.addEventListener("click", () => {
   const a = new Stopwatcher({
