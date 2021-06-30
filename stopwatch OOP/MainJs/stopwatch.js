@@ -141,7 +141,6 @@ class Buttons {
   }
 }
 Object.values(storage).forEach((stopwachers) => new Stopwatcher(stopwachers));
-//  для создания нового секундомера
 const creator = document.createElement("div");
 const creatorButton = document.createElement("button");
 creatorButton.textContent = "создать секундомер";
