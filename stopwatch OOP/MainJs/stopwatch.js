@@ -1,38 +1,15 @@
 import { rootDiv, storage } from "../Storage/Storage.js";
-
 class Stopwatcher {
-  // данные, которые необходимы для создания и отрисовки. дефолтное состояние на новый экземпляр секундомера.
+  tick = null;
   constructor({ id, millisec = 0, li = [], disabled = true, paused = true }) {
     this.id = id;
-    this.data = new Date(millisec);
+    this.time = new Date(millisec);
     this.millisec = millisec;
     this.li = li;
     this.disabled = disabled;
     this.paused = paused;
     this.structure();
   }
-  converter(data) {
-    return data < 10 ? ("0" + data).slice(0, 2) : data;
-  }
-  tick = null;
-  // для обработки this.data
-  dataHelper() {
-    return `
-	  ${this.converter(this.data.getUTCHours())}:${this.converter(
-      this.data.getMinutes()
-    )}:${this.converter(this.data.getSeconds())}:${
-      ("0" + this.data.getMilliseconds()).slice(-3, -1) < 10
-        ? ("00" + this.data.getMilliseconds()).slice(-3, -1)
-        : String(this.data.getMilliseconds()).slice(-3, -1)
-    }
-	  `;
-  }
-  // сохранение результата
-  recordedResult() {
-    storage[`${this.id}`] = this;
-    localStorage.setItem("dataStore", JSON.stringify(storage));
-  }
-  // описание основной структуры
   structure() {
     const divElement = document.createElement("div");
     const hElement = document.createElement("h1");
@@ -40,142 +17,141 @@ class Stopwatcher {
     const divElement2 = document.createElement("div");
     const mainList = document.createElement("div");
     const listUl = document.createElement("ul");
+    const button = new Buttons(this);
+    const starter = button.startButton(this, watcher);
+    const pauser = button.pauseButton(this);
+    const reseter = button.resetButton(this, watcher, listUl);
+    const lapper = button.lapButton(this, watcher, listUl);
     divElement.classList.add(this.id, "stopwatchers");
     hElement.textContent = "Секундомер";
-    watcher.textContent = this.dataHelper();
+    watcher.textContent = this.convertedWatcher();
     mainList.className = "list";
-
-    // кнопка для удаления секундомера и удаление всех данных о нем
-    const deleterButton = document.createElement("button");
-    deleterButton.textContent = "удалить секундомер";
-    deleterButton.addEventListener("click", () => {
-      clearInterval(this.tick);
-      delete storage[this.id];
-      localStorage.setItem("dataStore", JSON.stringify(storage));
-      divElement.remove();
-    });
-
-    // кнопка старта
-    const startButton = document.createElement("button");
-    startButton.className = "startButton";
-    startButton.textContent = "start";
-    startButton.disabled = !this.disabled;
-    startButton.addEventListener("click", () => {
-      clearInterval(this.tick);
-      this.tick = setInterval(() => {
-        this.millisec += 10;
-        this.data = new Date(this.millisec);
-        watcher.textContent = this.dataHelper();
-        storage[`${this.id}`] = this;
-        localStorage.setItem("dataStore", JSON.stringify(storage));
-      }, 10);
-      this.disabled = !this.disabled;
-      pauseButton.disabled = lapButton.disabled = false;
-      resetButton.disabled = startButton.disabled = true;
-      this.paused = !this.paused;
-      this.recordedResult();
-    });
-
-    // кнопка паузы
-    const pauseButton = document.createElement("button");
-    pauseButton.className = "pauseButton";
-    pauseButton.textContent = "pause";
-    pauseButton.disabled = this.disabled;
-    pauseButton.addEventListener("click", () => {
-      clearInterval(this.tick);
-      this.disabled = !this.disabled;
-      pauseButton.disabled = lapButton.disabled = true;
-      resetButton.disabled = startButton.disabled = false;
-      this.paused = !this.paused;
-      this.recordedResult();
-    });
-
-    // кнопка сброса
-    const resetButton = document.createElement("button");
-    resetButton.className = "resetButton";
-    resetButton.textContent = "reset";
-    resetButton.disabled = !this.disabled;
-    resetButton.addEventListener("click", () => {
-      listUl.innerHTML = "";
-      this.li = [];
-      this.millisec = 0;
-      this.data = new Date(this.millisec);
-      watcher.textContent = this.dataHelper();
-      this.recordedResult();
-    });
-
-    // кнопка круга
-    const lapButton = document.createElement("button");
-    lapButton.className = "lapButton";
-    lapButton.textContent = "lap";
-    lapButton.disabled = this.disabled;
-    lapButton.addEventListener("click", () => {
-      const listLi = document.createElement("li");
-      const liDel = document.createElement("button");
-      liDel.textContent = "x";
-      liDel.addEventListener("click", (e) => {
-        e.target.remove();
-        listLi.remove();
-        this.li = this.li.filter((i) => i != listLi.textContent);
-        this.recordedResult();
-      });
-      this.li.push(this.dataHelper());
-      listLi.textContent = `${this.li[this.li.length - 1]}`;
-      listUl.append(listLi);
-      listLi.append(liDel);
-    });
-
-    // ставим элемент каждый на свое место
     rootDiv.append(divElement);
-    divElement.append(deleterButton, hElement, watcher, divElement2, mainList);
-    divElement2.append(startButton, pauseButton, resetButton, lapButton);
-    mainList.append(listUl);
-
-    //  при обновлении страницы выстраивается структура списка
-    this.li.forEach((i) => {
-      const listLi = document.createElement("li");
-      listLi.textContent = `${i}`;
-      const liDel = document.createElement("button");
-      liDel.textContent = "x";
-      liDel.addEventListener("click", (e) => {
-        e.target.remove();
-        listLi.remove();
-        this.li = this.li.filter((i) => i != listLi.textContent);
-        this.recordedResult();
-      });
-      listUl.append(listLi);
-      listLi.append(liDel);
+    divElement.append(hElement, watcher, divElement2, mainList);
+    this.li.forEach((time) => {
+      listUl.prepend(this.toGenerLi(time));
     });
-
-    // для того, чтобы секундомер не прекращал работу после обновления страницы
-    if (!this.paused) {
-      this.tick = setInterval(() => {
-        this.millisec += 10;
-        this.data = new Date(this.millisec);
-        watcher.textContent = this.dataHelper();
-        storage[`${this.id}`] = this;
-        localStorage.setItem("dataStore", JSON.stringify(storage));
-      }, 10);
-    }
+    divElement2.append(starter, pauser, reseter, lapper);
+    mainList.append(listUl);
+    starter.addEventListener("click", () => {
+      pauser.disabled = lapper.disabled = false;
+      reseter.disabled = starter.disabled = true;
+    });
+    pauser.addEventListener("click", () => {
+      pauser.disabled = lapper.disabled = true;
+      reseter.disabled = starter.disabled = false;
+    });
+  }
+  toGenerLi(time) {
+    const listLi = document.createElement("li");
+    listLi.textContent = `${time}`;
+    const liDel = document.createElement("button");
+    liDel.textContent = "x";
+    liDel.addEventListener("click", (event) => {
+      event.target.remove();
+      listLi.remove();
+      this.li = this.li.filter((i) => i != listLi.textContent);
+      this.toRec();
+    });
+    listLi.append(liDel);
+    return listLi;
+  }
+  converter(time) {
+    return time < 10 ? ("0" + time).slice(0, 2) : time;
+  }
+  convertedWatcher() {
+    const curMili = this.time.getMilliseconds();
+    return `
+		 ${this.converter(this.time.getUTCHours())}:${this.converter(
+      this.time.getMinutes()
+    )}:${this.converter(this.time.getSeconds())}:${
+      ("0" + curMili).slice(-3, -1) < 10
+        ? ("00" + curMili).slice(-3, -1)
+        : String(curMili).slice(-3, -1)
+    }`;
+  }
+  toRec() {
+    storage[`${this.id}`] = this;
+    localStorage.setItem("dataStore", JSON.stringify(storage));
   }
 }
-
-//  после обновления страницы отрисовываем создаем и отрисовываем все, что было сохранено
-Object.values(storage).forEach((i) => new Stopwatcher(i));
-
+class Buttons {
+  constructor() {}
+  timerRun(content, watcher) {
+    return (content.tick = setInterval(() => {
+      content.millisec += 10;
+      content.time = new Date(content.millisec);
+      watcher.textContent = content.convertedWatcher();
+      content.toRec();
+    }, 10));
+  }
+  startButton(content, watcher) {
+    const tostart = document.createElement("button");
+    tostart.className = "startButton";
+    tostart.textContent = "start";
+    tostart.disabled = !content.disabled;
+    tostart.addEventListener("click", () => {
+      clearInterval(content.tick);
+      content.paused = !content.paused;
+      content.disabled = !content.disabled;
+      this.timerRun(content, watcher);
+    });
+    !content.paused ? this.timerRun(content, watcher) : null;
+    return tostart;
+  }
+  pauseButton(content) {
+    const pause = document.createElement("button");
+    pause.className = "pauseButton";
+    pause.textContent = "pause";
+    pause.disabled = content.disabled;
+    pause.addEventListener("click", () => {
+      clearInterval(content.tick);
+      content.paused = !content.paused;
+      content.disabled = !content.disabled;
+      content.toRec();
+    });
+    return pause;
+  }
+  resetButton(content, watcher, ullist) {
+    const reset = document.createElement("button");
+    reset.className = "resetButton";
+    reset.textContent = "reset";
+    reset.disabled = !content.disabled;
+    reset.addEventListener("click", () => {
+      ullist.innerHTML = "";
+      content.li = [];
+      content.millisec = 0;
+      content.time = new Date(content.millisec);
+      watcher.textContent = content.convertedWatcher();
+      content.toRec();
+    });
+    return reset;
+  }
+  lapButton(content, watcher, ul) {
+    const lap = document.createElement("button");
+    lap.className = "lapButton";
+    lap.textContent = "lap";
+    lap.disabled = content.disabled;
+    lap.addEventListener("click", () => {
+      content.li.push(watcher.textContent);
+      ul.prepend(content.toGenerLi(watcher.textContent));
+      content.toRec();
+    });
+    return lap;
+  }
+}
+Object.values(storage).forEach((stopwachers) => new Stopwatcher(stopwachers));
 //  для создания нового секундомера
 const creator = document.createElement("div");
 const creatorButton = document.createElement("button");
 creatorButton.textContent = "создать секундомер";
-
-// используем дефолтное состояние секундомера, но id передаем именно здесь, иначе js ругается
 creatorButton.addEventListener("click", () => {
   const a = new Stopwatcher({
     id:
       ((Object.values(storage)[Object.values(storage).length - 1] || 0).id ||
         0) + 1,
   });
-  a.recordedResult();
+  a.toRec();
 });
 rootDiv.before(creator);
 creator.append(creatorButton);
