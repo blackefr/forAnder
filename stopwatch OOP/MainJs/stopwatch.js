@@ -63,31 +63,21 @@ class Stopwatcher {
     liDel.addEventListener("click", (event) => {
       event.target.remove();
       listLi.remove();
-      this.li = this.li.filter((i) => i != listLi.textContent);
+      this.li = this.li.filter((listElementContent) => listElementContent != listLi.textContent);
       this.localStorageSetter();
     });
     listLi.append(liDel);
     return listLi;
   }
 
-  converter(time) {
-    return time < 10 ? ("0" + time).slice(0, 2) : time;
-  }
-
   convertedWatcher() {
     const curMili = this.time.getMilliseconds();
     return `
-		 ${this.converter(this.time.getUTCHours())}:${this.converter(
-      this.time.getMinutes()
-    )}:${this.converter(this.time.getSeconds())}:${
-      ("0" + curMili).slice(-3, -1) < 10
-        ? ("00" + curMili).slice(-3, -1)
-        : String(curMili).slice(-3, -1)
-    }`;
+		 ${this.time.toLocaleTimeString('en-GB', {timeZone : 'UTC'})}:${("0" + curMili).slice(-3, -1) < 10? ("00" + curMili).slice(-3, -1) : String(curMili).slice(-3, -1)}`;
   }
 
   localStorageSetter() {
-    storage[`${this.id}`] = this;
+    storage[this.id] = this;
     localStorage.setItem("dataStore", JSON.stringify(storage));
   }
 }
